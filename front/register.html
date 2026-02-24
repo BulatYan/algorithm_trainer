@@ -4,71 +4,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #8ba3a3, #1c1f26);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            background: #afa8a8;
+            padding: 40px;
+            border-radius: 12px;
+            width: 380px;
+            box-shadow: 0 0 30px rgba(115, 71, 71, 0.6);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            background: #201f1f;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .form-group input:focus {
+            border: 2px solid #b1aeac;
+        }
+
+        .input-error {
+            border: 2px solid #e12525 !important;
+        }
+
+        .input-success {
+            border: 2px solid #02682b !important;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #8c8383;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+            accent-color: #838383;
+        }
+
+        .form-error {
+            color: #e12525;
+            font-size: 14px;
+            margin-bottom: 15px;
+            min-height: 18px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background: #717a75;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #8f6f6f;
+        }
+    </style>
 </head>
+
 <body>
-<h1>Регистрация пользователя</h1>
 
-<form id="registerForm" novalidate>
-    <p>
-        <label for="name">Имя:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
-    </p>
+<div class="card">
+    <form id="registerForm" novalidate>
 
-    <p>
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
-    </p>
+        <div class="form-group">
+            <input type="text" id="name" placeholder="Имя">
+        </div>
 
-    <p>
-        <label for="password">Пароль:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-    </p>
-    <p>
-        <label for="check_password">Повторите пароль:</label><br>
-        <input type="password" id="check_password" name="check_password" required><br><br>
-    </p>
-    <p>
-        <label for="remember_me">Запомнить меня:</label>
-        <input type="checkbox" id="remember_me" name="remember_me"><br><br>
-    </p>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="Email">
+        </div>
 
-    <p>
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Пароль">
+        </div>
+
+        <div class="form-group">
+            <input type="password" id="check_password" placeholder="Повторите пароль">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="remember_me">
+            <label for="remember_me">Запомнить меня</label>
+        </div>
+
+        <div id="formError" class="form-error"></div>
+
         <button type="submit">Зарегистрироваться</button>
-    </p>
-</form>
+    </form>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
         const form = document.getElementById("registerForm");
+        const errorBox = document.getElementById("formError");
+
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const checkPasswordInput = document.getElementById("check_password");
+
+        function setError(input) {
+            input.classList.add("input-error");
+            input.classList.remove("input-success");
+        }
+
+        function setSuccess(input) {
+            input.classList.remove("input-error");
+            input.classList.add("input-success");
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
 
         form.addEventListener("submit", async function (event) {
             event.preventDefault();
+            errorBox.textContent = "";
 
-            const Name = document.getElementById("name").value;
-            const Email = document.getElementById("email").value;
-            const Password = document.getElementById("password").value;
-            const Check_Password = document.getElementById("check_password").value;
+            let isValid = true;
+
+            if (nameInput.value.trim() === "") {
+                setError(nameInput);
+                isValid = false;
+            } else {
+                setSuccess(nameInput);
+            }
+
+            if (!validateEmail(emailInput.value.trim())) {
+                setError(emailInput);
+                isValid = false;
+            } else {
+                setSuccess(emailInput);
+            }
+
+            if (passwordInput.value.length < 6) {
+                setError(passwordInput);
+                isValid = false;
+            } else {
+                setSuccess(passwordInput);
+            }
+
+            if (checkPasswordInput.value !== passwordInput.value || checkPasswordInput.value === "") {
+                setError(checkPasswordInput);
+                isValid = false;
+            } else {
+                setSuccess(checkPasswordInput);
+            }
+
+            if (!isValid) {
+                errorBox.textContent = "Ошибка: Проверьте корректность заполнения формы";
+                return;
+            }
+
             try {
                 const res = await fetch("http://localhost:8080/register", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ Name, Email, Password, Check_Password})
+                    body: JSON.stringify({
+                        name: nameInput.value,
+                        email: emailInput.value,
+                        password: passwordInput.value,
+                        remember: document.getElementById("remember_me").checked
+                    })
                 });
 
-                const data = await res.json();
-                console.log(data);
-
                 if (!res.ok) {
-                    alert("Ошибка: " + (data.error || res.status));
+                    errorBox.textContent = "Ошибка регистрации. Возможно, пользователь уже существует.";
                     return;
                 }
 
-                alert("Пользователь зарегистрирован!");
+                errorBox.style.color = "#02682b";
+                errorBox.textContent = "Регистрация успешна!";
+                form.reset();
+
             } catch (err) {
-                console.error("Ошибка:", err);
-                alert("Ошибка запроса");
+                errorBox.textContent = "Ошибка соединения с сервером";
             }
         });
+
     });
 </script>
 
