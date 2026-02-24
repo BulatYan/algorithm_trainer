@@ -7,48 +7,70 @@
 </head>
 <body>
 <h1>Регистрация пользователя</h1>
-<form id="registerForm">
-    <label for="name">Имя:</label>
-    <input type="text" id="name" required><br><br>
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" required><br><br>
+<form id="registerForm" novalidate>
+    <p>
+        <label for="name">Имя:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+    </p>
 
-    <label for="password">Пароль:</label>
-    <input type="password" id="password" required><br><br>
+    <p>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+    </p>
 
-    <button type="submit">Зарегистрироваться</button>
+    <p>
+        <label for="password">Пароль:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+    </p>
+    <p>
+        <label for="check_password">Повторите пароль:</label><br>
+        <input type="password" id="check_password" name="check_password" required><br><br>
+    </p>
+    <p>
+        <label for="remember_me">Запомнить меня:</label>
+        <input type="checkbox" id="remember_me" name="remember_me"><br><br>
+    </p>
+
+    <p>
+        <button type="submit">Зарегистрироваться</button>
+    </p>
 </form>
 
 <script>
-    // JavaScript для отправки данных на сервер
-    document.getElementById("registerForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("registerForm");
 
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
 
-        fetch("http://localhost:8080/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: name,   // Добавлено поле name
-                email: email,
-                password: password,
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
+            const Name = document.getElementById("name").value;
+            const Email = document.getElementById("email").value;
+            const Password = document.getElementById("password").value;
+            const Check_Password = document.getElementById("check_password").value;
+            try {
+                const res = await fetch("http://localhost:8080/register", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ Name, Email, Password, Check_Password})
+                });
+
+                const data = await res.json();
                 console.log(data);
+
+                if (!res.ok) {
+                    alert("Ошибка: " + (data.error || res.status));
+                    return;
+                }
+
                 alert("Пользователь зарегистрирован!");
-            })
-            .catch(error => {
-                console.error("Ошибка:", error);
-            });
+            } catch (err) {
+                console.error("Ошибка:", err);
+                alert("Ошибка запроса");
+            }
+        });
     });
 </script>
+
 </body>
 </html>

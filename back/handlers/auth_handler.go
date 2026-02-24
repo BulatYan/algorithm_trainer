@@ -26,9 +26,10 @@ type AuthRequest struct {
 }
 
 type RegisterRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Name     string `json:"name" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Email          string `json:"email" binding:"required,email"`
+	Name           string `json:"name" binding:"required"`
+	Password       string `json:"password" binding:"required"`
+	Check_Password string `json:"check_password" binding:"required"`
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -75,10 +76,22 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+	if req.Check_Password != req.Password {
+		log.Printf("passwords must match\n")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "passwords must match"})
+		return
+
+	}
+	existingUser_name, _ := h.UserRepo.GetUserByName(context.Background(), req.Name)
+	if existingUser_name != nil {
+		log.Printf("user with this name exists\n")
+		c.JSON(http.StatusConflict, gin.H{"error": "user with this name already exists"})
+		return
+	}
 	existingUser, _ := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
 	if existingUser != nil {
-		log.Printf("user with this username exists\n")
-		c.JSON(http.StatusConflict, gin.H{"error": "user with this username already exists"})
+		log.Printf("user with this email exists\n")
+		c.JSON(http.StatusConflict, gin.H{"error": "user with this email already exists"})
 		return
 	}
 	hash, err := utils.HashPassword(req.Password)

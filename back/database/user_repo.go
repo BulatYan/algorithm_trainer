@@ -44,6 +44,20 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	}
 	return user, err
 }
+func (r *UserRepository) GetUserByName(ctx context.Context, name string) (*models.User, error) {
+	user := &models.User{}
+	query := `
+			SELECT id, name, password_hash, emal
+			FROM users WHERE name = $1
+`
+	row := r.DB.QueryRowContext(ctx, query, name)
+	err := row.Scan(&user.ID, &user.Name, &user.PasswordHash, &user.Email)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return user, err
+}
 
 func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*models.User, error) {
 	user := &models.User{}
