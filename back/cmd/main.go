@@ -14,7 +14,6 @@ import (
 func main() {
 	log.Println("Testing config and database...")
 
-	// Загружаем конфиг и подключаемся к БД
 	dbConfig := config.LoadDB()
 	db := database.Connect(dbConfig)
 	database.ApplyMigrations(db, "back/migrations")
@@ -23,17 +22,15 @@ func main() {
 	userRepo := database.NewUserRepository(db)
 	r := routes.SetupRouter(userRepo)
 
-	// Получаем абсолютный путь до файла
-	absPath, err := filepath.Abs("../front/register.html")
+	reg_Path, err := filepath.Abs("../front/register.html")
 	if err != nil {
 		log.Printf("Error getting absolute path: %v", err)
 	}
 
-	r.GET("/", func(c *gin.Context) {
-		log.Println("Request received for /")
+	r.GET("/register", func(c *gin.Context) {
+		log.Println("Request received for /register")
 
-		// Проверяем существование файла
-		_, err := os.Stat(absPath)
+		_, err := os.Stat(reg_Path)
 		if os.IsNotExist(err) {
 			log.Printf("File not found: %v", err)
 			c.JSON(500, gin.H{"error": "register.html not found"})
@@ -43,10 +40,27 @@ func main() {
 			c.JSON(500, gin.H{"error": "Failed to check register.html"})
 			return
 		}
-		log.Printf("Absolute path to register.html: %v", absPath)
+		log.Printf("Absolute path to register.html: %v", reg_Path)
 
-		// Отдаем файл
-		c.File(absPath)
+		c.File(reg_Path)
+	})
+	loginPath, err := filepath.Abs("../front/login.html")
+	r.GET("/login", func(c *gin.Context) {
+		log.Println("Request received for /register")
+
+		_, err := os.Stat(loginPath)
+		if os.IsNotExist(err) {
+			log.Printf("File not found: %v", err)
+			c.JSON(500, gin.H{"error": "login.html not found"})
+			return
+		} else if err != nil {
+			log.Printf("Error checking file: %v", err)
+			c.JSON(500, gin.H{"error": "Failed to check login.html"})
+			return
+		}
+		log.Printf("Absolute path to register.html: %v", loginPath)
+
+		c.File(loginPath)
 	})
 
 	log.Println("✅ Everything works!")

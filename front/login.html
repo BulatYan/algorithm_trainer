@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+</head>
+<body>
+<h1>Авторизация пользователя</h1>
+
+<form id="registerForm" novalidate>
+
+    <p>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+    </p>
+
+    <p>
+        <label for="password">Пароль:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+    </p>
+    <p>
+        <label for="remember_me">Запомнить меня:</label>
+        <input type="checkbox" id="remember_me" name="remember_me"><br><br>
+    </p>
+
+    <p>
+        <button type="submit">Войти</button>
+    </p>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("loginForm");
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const Email = document.getElementById("email").value;
+            const Password = document.getElementById("password").value;
+            try {
+                const res = await fetch("http://localhost:8080/login", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({Email, Password})
+                });
+
+                const data = await res.json();
+                console.log(data);
+
+                if (!res.ok) {
+                    alert("Ошибка: " + (data.error || res.status));
+                    return;
+                }
+
+                alert("Вы успешны авторизованны");
+            } catch (err) {
+                console.error("Ошибка:", err);
+                alert("Ошибка запроса");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
