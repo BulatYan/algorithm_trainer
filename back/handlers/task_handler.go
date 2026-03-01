@@ -28,6 +28,12 @@ type SearchTaskRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
+type СhangeTaskRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	Lvl         int    `json:"lvl" binding:"required"`
+}
+
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var req CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -70,5 +76,25 @@ func (h *TaskHandler) SearchTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, existname_Task)
-
+}
+func (h *TaskHandler) ChangeTask(c *gin.Context) {
+	var req СhangeTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("invalid request: %v\n", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	task, _ := h.TaskRepo.GetTaskByName(context.Background(), req.Name)
+	if task == nil {
+		log.Printf("task not found \n")
+		c.JSON(http.StatusConflict, gin.H{"error": "task not found"})
+		return
+	}
+	if req.Description != "" {
+		task.Description = req.Description
+	}
+	if req.Lvl != 0 {
+		task.Lvl = req.Lvl
+	}
+	c.JSON(http.StatusOK, task)
 }
