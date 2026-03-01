@@ -20,7 +20,30 @@ func main() {
 	defer db.Close()
 
 	userRepo := database.NewUserRepository(db)
-	r := routes.SetupRouter(userRepo)
+	taskRepo := database.NewTaskRepository(db)
+	r := routes.SetupRouter(userRepo, taskRepo)
+
+	base_Path, err := filepath.Abs("../front/base.html")
+	if err != nil {
+		log.Printf("Error getting absolute path: %v", err)
+	}
+	r.GET("/", func(c *gin.Context) {
+		log.Println("Request received for /")
+
+		_, err := os.Stat(base_Path)
+		if os.IsNotExist(err) {
+			log.Printf("File not found: %v", err)
+			c.JSON(500, gin.H{"error": "base.html not found"})
+			return
+		} else if err != nil {
+			log.Printf("Error checking file: %v", err)
+			c.JSON(500, gin.H{"error": "Failed to check register.html"})
+			return
+		}
+		log.Printf("Absolute path to register.html: %v", base_Path)
+
+		c.File(base_Path)
+	})
 
 	reg_Path, err := filepath.Abs("../front/register.html")
 	if err != nil {

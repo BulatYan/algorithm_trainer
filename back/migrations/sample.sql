@@ -4,3 +4,10 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE
     );
+
+CREATE TABLE IF NOT EXISTS tasks(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NUll UNIQUE,
+    description VARCHAR(255) NOT NULL,
+    lvl INTEGER NOT NULL
+);
