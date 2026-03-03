@@ -17,7 +17,7 @@ func SetupRoutes(
 	r.POST("/register", authHandler.Register)
 	r.POST("/create_task", taskHandler.CreateTask)
 	r.POST("/search_task", taskHandler.SearchTask)
-	r.PUT("/update_task", taskHandler.ChangeTask)
+	r.PUT("/update_task", taskHandler.Update_Task)
 	r.PUT("/update_user", authHandler.UpdateProfile)
 }
 func SetupRouter(

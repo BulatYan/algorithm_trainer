@@ -41,3 +41,18 @@ func (r *TaskRepository) GetTaskByName(ctx context.Context, name string) (*model
 	}
 	return task, err
 }
+func (r *TaskRepository) UpdateTask(ctx context.Context, task *models.Task) error {
+	query := `
+		UPDATE tasks
+		SET description = $1, lvl = $2
+		WHERE name = $3
+	`
+
+	_, err := r.DB.ExecContext(ctx, query,
+		task.Description,
+		task.Lvl,
+		task.Name,
+	)
+
+	return err
+}

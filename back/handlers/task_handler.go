@@ -77,7 +77,7 @@ func (h *TaskHandler) SearchTask(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, existname_Task)
 }
-func (h *TaskHandler) ChangeTask(c *gin.Context) {
+func (h *TaskHandler) Update_Task(c *gin.Context) {
 	var req СhangeTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Printf("invalid request: %v\n", err.Error())
@@ -96,5 +96,11 @@ func (h *TaskHandler) ChangeTask(c *gin.Context) {
 	if req.Lvl != 0 {
 		task.Lvl = req.Lvl
 	}
+	err := h.TaskRepo.UpdateTask(context.Background(), task)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed"})
+		return
+	}
+
 	c.JSON(http.StatusOK, task)
 }
