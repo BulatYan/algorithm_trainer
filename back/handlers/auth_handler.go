@@ -31,6 +31,12 @@ type RegisterRequest struct {
 	Password       string `json:"password" binding:"required"`
 	Check_Password string `json:"check_password" binding:"required"`
 }
+type UpdateProfileRequest struct {
+	Email          string `json:"email" binding:"required,email"`
+	New_Name       string `json:"new_name" binding:"required"`
+	Password       string `json:"password" binding:"required"`
+	Check_Password string `json:"check_password" binding:"required"`
+}
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req AuthRequest
@@ -78,7 +84,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 	if req.Check_Password != req.Password {
 		log.Printf("passwords must match\n")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "passwords must match"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "passwords must match"})
 		return
 
 	}
@@ -114,4 +120,44 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{})
+}
+func (h *AuthHandler) UpdateProfile(c *gin.Context) {
+	var req UpdateProfileRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	user, _ := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
+	if user == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+		return
+	}
+	existingUser, _ := h.UserRepo.GetUserByName(context.Background(), req.New_Name)
+	if existingUser != nil && existingUser.Email != req.Email {
+		c.JSON(http.StatusConflict, gin.H{"error": "user with this name already exists"})
+		return
+	}
+	if req.New_Name != "" {
+		user.Name = req.New_Name
+	}
+	if req.Password != req.Check_Password {
+		log.Printf("passwords must match\n")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "passwords must match"})
+		return
+	}
+	hash, err := utils.HashPassword(req.Password)
+	if err != nil {
+		log.Printf("hashing password error: %v\n", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "server-side error"})
+		return
+	}
+	user.PasswordHash = hash
+	err = h.UserRepo.UpdateUser(context.Background(), user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
 }

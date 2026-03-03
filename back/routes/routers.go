@@ -18,6 +18,7 @@ func SetupRoutes(
 	r.POST("/create_task", taskHandler.CreateTask)
 	r.POST("/search_task", taskHandler.SearchTask)
 	r.PUT("/update_task", taskHandler.ChangeTask)
+	r.PUT("/update_user", authHandler.UpdateProfile)
 }
 func SetupRouter(
 	userRepo *database.UserRepository,

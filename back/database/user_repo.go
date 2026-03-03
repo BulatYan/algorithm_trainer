@@ -47,7 +47,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 func (r *UserRepository) GetUserByName(ctx context.Context, name string) (*models.User, error) {
 	user := &models.User{}
 	query := `
-			SELECT id, name, password_hash, emal
+			SELECT id, name, password_hash, email
 			FROM users WHERE name = $1
 `
 	row := r.DB.QueryRowContext(ctx, query, name)
@@ -74,4 +74,19 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*models.User,
 		return nil, nil
 	}
 	return user, err
+}
+func (r *UserRepository) UpdateUser(ctx context.Context, user *models.User) error {
+	query := `
+		UPDATE users
+		SET name = $1, password_hash = $2
+		WHERE email = $3
+	`
+
+	_, err := r.DB.ExecContext(ctx, query,
+		user.Name,
+		user.PasswordHash,
+		user.Email,
+	)
+
+	return err
 }
