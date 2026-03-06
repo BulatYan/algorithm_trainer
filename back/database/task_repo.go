@@ -16,12 +16,13 @@ func NewTaskRepository(db *sql.DB) *TaskRepository {
 
 func (r *TaskRepository) CreateTask(ctx context.Context, task *models.Task) error {
 	query := `
-		INSERT INTO tasks (name, description, lvl)
-		VALUES ($1, $2, $3)
+		INSERT INTO tasks (id_user, name, description, lvl)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`
 
 	return r.DB.QueryRowContext(ctx, query,
+		task.ID_USER,
 		task.Name,
 		task.Description,
 		task.Lvl,
@@ -30,11 +31,11 @@ func (r *TaskRepository) CreateTask(ctx context.Context, task *models.Task) erro
 func (r *TaskRepository) GetTaskByName(ctx context.Context, name string) (*models.Task, error) {
 	task := &models.Task{}
 	query := `
-		SELECT id, name, description, lvl
+		SELECT id, id_user, name, description, lvl
 		FROM tasks WHERE name = $1
 	`
 	row := r.DB.QueryRowContext(ctx, query, name)
-	err := row.Scan(&task.ID, &task.Name, &task.Description, &task.Lvl)
+	err := row.Scan(&task.ID, &task.ID_USER, &task.Name, &task.Description, &task.Lvl)
 
 	if err == sql.ErrNoRows {
 		return nil, nil

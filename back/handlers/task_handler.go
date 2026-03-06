@@ -13,14 +13,17 @@ import (
 
 type TaskHandler struct {
 	TaskRepo *database.TaskRepository
+	UserRepo *database.UserRepository
 }
 
-func NewTaskHandler(repo *database.TaskRepository) *TaskHandler {
-	return &TaskHandler{TaskRepo: repo}
+func NewTaskHandler(task_repo *database.TaskRepository, user_repo *database.UserRepository) *TaskHandler {
+	return &TaskHandler{TaskRepo: task_repo,
+		UserRepo: user_repo}
 }
 
 type CreateTaskRequest struct {
 	Name        string `json:"name" binding:"required"`
+	Email       string `json:"email" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	Lvl         int    `json:"lvl" binding:"required"`
 }
@@ -28,8 +31,9 @@ type SearchTaskRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type СhangeTaskRequest struct {
+type UpdateTaskRequest struct {
 	Name        string `json:"name" binding:"required"`
+	Email       string `json:"email" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	Lvl         int    `json:"lvl" binding:"required"`
 }
@@ -45,6 +49,12 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	if existnameTask != nil {
 		log.Printf("task with this name exists\n")
 		c.JSON(http.StatusConflict, gin.H{"error": "task with this name already exists"})
+		return
+	}
+	existUser, _ := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
+	if existUser == nil {
+		log.Printf("user not found\n")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
 	}
 	task := models.Task{
@@ -78,7 +88,7 @@ func (h *TaskHandler) SearchTask(c *gin.Context) {
 	c.JSON(http.StatusOK, existname_Task)
 }
 func (h *TaskHandler) Update_Task(c *gin.Context) {
-	var req СhangeTaskRequest
+	var req UpdateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Printf("invalid request: %v\n", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -88,6 +98,16 @@ func (h *TaskHandler) Update_Task(c *gin.Context) {
 	if task == nil {
 		log.Printf("task not found \n")
 		c.JSON(http.StatusConflict, gin.H{"error": "task not found"})
+		return
+	}
+	existUser, _ := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
+	if existUser == nil {
+		log.Printf("user not found\n")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+	}
+	if existUser.ID != task.ID_USER {
+		log.Printf("another user\n")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "another user"})
 		return
 	}
 	if req.Description != "" {

@@ -38,6 +38,10 @@ type UpdateProfileRequest struct {
 	Check_Password string `json:"check_password" binding:"required"`
 }
 
+type Check_EmailRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req AuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -74,7 +78,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"auth_token": token})
 }
-
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -125,6 +128,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 	var req UpdateProfileRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("invalid request: %v\n", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
@@ -160,4 +164,23 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+}
+func (h *AuthHandler) CheckEmail(c *gin.Context) {
+	var req Check_EmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("invalid request: %v\n", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	existing_email, err := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
+	if err != nil {
+		log.Printf("database error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		return
+	}
+	if existing_email == nil {
+		log.Printf("user %v not found\n", req.Email)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+		return
+	}
 }

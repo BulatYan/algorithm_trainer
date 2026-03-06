@@ -28,7 +28,7 @@ func SetupRouter(
 	r := gin.Default()
 
 	authHandler := handlers.NewAuthHandler(userRepo)
-	taskHandler := handlers.NewTaskHandler(taskRepo)
+	taskHandler := handlers.NewTaskHandler(taskRepo, userRepo)
 	SetupRoutes(
 		r,
 		authHandler,
