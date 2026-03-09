@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"net/smtp"
 	"ped_poject/database"
 	"ped_poject/models"
 	"ped_poject/utils"
@@ -172,15 +174,32 @@ func (h *AuthHandler) CheckEmail(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	existing_email, err := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
+	existing_User, err := h.UserRepo.GetUserByEmail(context.Background(), req.Email)
 	if err != nil {
 		log.Printf("database error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
-	if existing_email == nil {
-		log.Printf("user %v not found\n", req.Email)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+	if existing_User == nil {
+		log.Printf("email %v not found\n", req.Email)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "email not found"})
 		return
 	}
+	user := "5c5516c6b12e23"
+	password := "375e7c6f6044b7"
+	from := "algorithmtrainerinc@gmail.com"
+	to := []string{req.Email}
+	addr := "smtp.mailtrap.io:2525"
+	host := "smtp.mailtrap.io"
+	msg := []byte("From: " + from + "\r\n" +
+		"To: " + req.Email + "\r\n" +
+		"Subject: Test mail\r\n\r\n" +
+		"Email body\r\n")
+	auth := smtp.PlainAuth("", user, password, host)
+	err = smtp.SendMail(addr, auth, from, to, msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Email sent successfully")
 }

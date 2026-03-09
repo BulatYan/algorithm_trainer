@@ -15,6 +15,7 @@ func SetupRoutes(
 
 	r.POST("/login", authHandler.Login)
 	r.POST("/register", authHandler.Register)
+	r.POST("/check_email", authHandler.CheckEmail)
 	r.POST("/create_task", taskHandler.CreateTask)
 	r.POST("/search_task", taskHandler.SearchTask)
 	r.PUT("/update_task", taskHandler.Update_Task)
