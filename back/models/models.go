@@ -8,9 +8,11 @@ type User struct {
 }
 
 type Task struct {
-	ID          int    `json:"id"`
-	ID_USER     int    `json:"id_user"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Lvl         int    `json:"lvl"`
+	ID          int      `json:"id"`
+	ID_USER     int      `json:"id_user"`
+	Name        string   `json:"name"`
+	Input_data  []string `json:"input_data"`
+	Output_data []string `json:"output_data"`
+	Description string   `json:"description"`
+	Lvl         int      `json:"lvl"`
 }

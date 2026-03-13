@@ -16,14 +16,16 @@ func NewTaskRepository(db *sql.DB) *TaskRepository {
 
 func (r *TaskRepository) CreateTask(ctx context.Context, task *models.Task) error {
 	query := `
-		INSERT INTO tasks (id_user, name, description, lvl)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO tasks (id_user, name, input_data, output_data, description, lvl)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id
 	`
 
 	return r.DB.QueryRowContext(ctx, query,
 		task.ID_USER,
 		task.Name,
+		task.Input_data,
+		task.Output_data,
 		task.Description,
 		task.Lvl,
 	).Scan(&task.ID)
@@ -31,11 +33,11 @@ func (r *TaskRepository) CreateTask(ctx context.Context, task *models.Task) erro
 func (r *TaskRepository) GetTaskByName(ctx context.Context, name string) (*models.Task, error) {
 	task := &models.Task{}
 	query := `
-		SELECT id, id_user, name, description, lvl
+		SELECT id, id_user, name, input_data, output_data, description, lvl
 		FROM tasks WHERE name = $1
 	`
 	row := r.DB.QueryRowContext(ctx, query, name)
-	err := row.Scan(&task.ID, &task.ID_USER, &task.Name, &task.Description, &task.Lvl)
+	err := row.Scan(&task.ID, &task.ID_USER, &task.Name, &task.Input_data, &task.Output_data, &task.Description, &task.Lvl)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -45,11 +47,13 @@ func (r *TaskRepository) GetTaskByName(ctx context.Context, name string) (*model
 func (r *TaskRepository) UpdateTask(ctx context.Context, task *models.Task) error {
 	query := `
 		UPDATE tasks
-		SET description = $1, lvl = $2
-		WHERE name = $3
+		SET input_data = $1, output_data = $2, description = $3, lvl = $4 
+		WHERE name = $5
 	`
 
 	_, err := r.DB.ExecContext(ctx, query,
+		task.Input_data,
+		task.Output_data,
 		task.Description,
 		task.Lvl,
 		task.Name,

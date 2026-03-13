@@ -22,20 +22,24 @@ func NewTaskHandler(task_repo *database.TaskRepository, user_repo *database.User
 }
 
 type CreateTaskRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Email       string `json:"email" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	Lvl         int    `json:"lvl" binding:"required"`
+	Name        string   `json:"name" binding:"required"`
+	Email       string   `json:"email" binding:"required"`
+	Description string   `json:"description" binding:"required"`
+	Input_data  []string `json:"input_data" binding:"required"`
+	Output_data []string `json:"output_data" binding:"required"`
+	Lvl         int      `json:"lvl" binding:"required"`
 }
 type SearchTaskRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
 type UpdateTaskRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Email       string `json:"email" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	Lvl         int    `json:"lvl" binding:"required"`
+	Name        string   `json:"name" binding:"required"`
+	Email       string   `json:"email" binding:"required"`
+	Description string   `json:"description" binding:"required"`
+	Input_data  []string `json:"input_data" binding:"required"`
+	Output_data []string `json:"output_data" binding:"required"`
+	Lvl         int      `json:"lvl" binding:"required"`
 }
 
 func (h *TaskHandler) CreateTask(c *gin.Context) {
@@ -59,7 +63,10 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	}
 	task := models.Task{
 		Name:        req.Name,
+		ID_USER:     existUser.ID,
 		Description: req.Description,
+		Input_data:  req.Input_data,
+		Output_data: req.Output_data,
 		Lvl:         req.Lvl,
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -109,6 +116,12 @@ func (h *TaskHandler) Update_Task(c *gin.Context) {
 		log.Printf("another user\n")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "another user"})
 		return
+	}
+	if req.Input_data != nil {
+		task.Input_data = req.Input_data
+	}
+	if req.Output_data != nil {
+		task.Output_data = req.Output_data
 	}
 	if req.Description != "" {
 		task.Description = req.Description

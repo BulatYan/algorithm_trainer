@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS tasks(
     id SERIAL PRIMARY KEY,
     id_user INTEGER,
     name VARCHAR(255) NOT NUll UNIQUE,
+    input_data TEXT[] NOT NUll,
+    output_data TEXT[] NOT NUll,
     description VARCHAR(255) NOT NULL,
     lvl INTEGER NOT NULL
 );
