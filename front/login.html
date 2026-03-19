@@ -26,26 +26,46 @@
 
         .form-group {
             margin-bottom: 20px;
+            position: relative;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px;
+            padding: 14px 45px 14px 14px;
             border-radius: 6px;
             border: 2px solid transparent;
             background: #201f1f;
             color: #fff;
             font-size: 14px;
             outline: none;
-            transition: 0.2s;
+            box-sizing: border-box;
         }
 
-        .form-group input::placeholder {
-            color: #888;
+        .toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #aaa;
+            z-index: 2;
+
+            width: 24px;
+            height: 24px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .form-group input:focus {
-            border: 2px solid #b1aeac;
+        .toggle:hover {
+            color: #fff;
+        }
+
+        .toggle svg {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
 
         .input-error {
@@ -54,19 +74,6 @@
 
         .input-success {
             border: 2px solid #02682b !important;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #8c8383;
-        }
-
-        .checkbox-group input {
-            margin-right: 8px;
-            accent-color: #838383;
         }
 
         .form-error {
@@ -85,7 +92,7 @@
             color: #fff;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 16px;
         }
 
         button:hover {
@@ -105,11 +112,20 @@
 
         <div class="form-group">
             <input type="password" id="password" placeholder="Пароль">
-        </div>
 
-        <div class="checkbox-group">
-            <input type="checkbox" id="remember_me">
-            <label for="remember_me">Запомнить меня</label>
+            <span class="toggle" onclick="togglePassword()">
+                <!-- глаз -->
+                <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+
+                <!-- перечеркнутый -->
+                <svg id="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.77 21.77 0 0 1 5.06-6.94"/>
+                    <path d="M1 1l22 22"/>
+                </svg>
+            </span>
         </div>
 
         <div id="formError" class="form-error"></div>
@@ -128,6 +144,23 @@
         const emailInput = document.getElementById("email");
         const passwordInput = document.getElementById("password");
 
+        const eyeOpen = document.getElementById("eyeOpen");
+        const eyeClosed = document.getElementById("eyeClosed");
+
+        function togglePassword() {
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeOpen.style.display = "none";
+                eyeClosed.style.display = "block";
+            } else {
+                passwordInput.type = "password";
+                eyeOpen.style.display = "block";
+                eyeClosed.style.display = "none";
+            }
+        }
+
+        window.togglePassword = togglePassword;
+
         function setError(input) {
             input.classList.add("input-error");
             input.classList.remove("input-success");
@@ -142,7 +175,7 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        form.addEventListener("submit", async function (event) {
+        form.addEventListener("submit", function (event) {
             event.preventDefault();
             errorBox.textContent = "";
 
@@ -163,33 +196,18 @@
             }
 
             if (!isValid) {
-                errorBox.textContent = "Ошибка: Проверьте данные";
+                errorBox.style.color = "#e12525";
+                errorBox.textContent = "Ошибка: проверьте данные";
                 return;
             }
 
-            try {
-                const res = await fetch("http://localhost:8080/login", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        email: emailInput.value,
-                        password: passwordInput.value,
-                        remember: document.getElementById("remember_me").checked
-                    })
-                });
+            errorBox.style.color = "#02682b";
+            errorBox.textContent = "Все корректно";
 
-                if (!res.ok) {
-                    errorBox.textContent = "Неверный email или пароль";
-                    return;
-                }
-
-                errorBox.style.color = "#02682b";
-                errorBox.textContent = "Авторизация успешна!";
-                form.reset();
-
-            } catch (err) {
-                errorBox.textContent = "Ошибка соединения с сервером";
-            }
+            // Перенаправление на base.html после успешной валидации
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 1000);
         });
 
     });

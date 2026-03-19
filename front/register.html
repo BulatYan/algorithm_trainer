@@ -155,6 +155,7 @@
         form.addEventListener("submit", async function (event) {
             event.preventDefault();
             errorBox.textContent = "";
+            errorBox.style.color = "#e12525";
 
             let isValid = true;
 
@@ -199,20 +200,38 @@
                         name: nameInput.value,
                         email: emailInput.value,
                         password: passwordInput.value,
+                        check_password: checkPasswordInput.value,
                         remember: document.getElementById("remember_me").checked
                     })
                 });
 
                 if (!res.ok) {
-                    errorBox.textContent = "Ошибка регистрации. Возможно, пользователь уже существует.";
+                    try {
+                        const errorData = await res.json();
+                        errorBox.textContent = errorData.message || "Ошибка регистрации. Возможно, пользователь уже существует.";
+                    } catch {
+                        errorBox.textContent = "Ошибка регистрации. Возможно, пользователь уже существует.";
+                    }
                     return;
                 }
 
+                // Успешная регистрация
                 errorBox.style.color = "#02682b";
-                errorBox.textContent = "Регистрация успешна!";
+                errorBox.textContent = "Регистрация успешна! Перенаправление...";
+
                 form.reset();
 
+                [nameInput, emailInput, passwordInput, checkPasswordInput].forEach(input => {
+                    input.classList.remove("input-success", "input-error");
+                });
+
+                // Перенаправление на главную страницу (корень сайта)
+                setTimeout(() => {
+                    window.location.href = "/";  // Изменено с "base.html" на "/"
+                }, 1000);
+
             } catch (err) {
+                console.error("Connection error:", err);
                 errorBox.textContent = "Ошибка соединения с сервером";
             }
         });
